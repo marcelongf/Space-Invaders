@@ -48,7 +48,7 @@ def checa_tiro():
     global ultimo_tiro
 
     if teclado.key_pressed("SPACE"):
-        if ultimo_tiro >= tiro_cd():
+        if ultimo_tiro >= tiro_cd(dificuldade):
             tiro = Sprite('./images/tiro.png')
             tiro.x = nave.x + nave.width/2 - tiro.width/2
             tiro.y = janela.height - nave.height
