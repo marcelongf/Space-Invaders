@@ -20,7 +20,10 @@ tiros = []
 ultimo_tiro = 1
 
 inimigos = []
+dir_inimigos = 1
 ultimo_inimigo = 2
+
+ultima_checagem_fps = 1
 
 def tiro_cd(dificuldade):
     if dificuldade == 1:
@@ -60,24 +63,76 @@ def tiros_fora_da_tela():
         if tiro.y <= 0:
             tiros.remove(tiro)
 
+def cria_inimigos():
+    for i in range(3):
+        linha = []
+        for j in range(6):
+            inimigo = Sprite('inimigo.png')
+            inimigo.y = i * inimigo.height
+            inimigo.x = j * inimigo.width
+            linha.append(inimigo)
+        inimigos.append(linha)
 
-def cria_inimigo():
-    global ultimo_inimigo
+def desenha_inimigos():
+    for linha in inimigos:
+        for inimigo in linha:
+            inimigo.draw()
 
-    if ultimo_inimigo > inimigo_cd(dificuldade):
-        for i in range(dificuldade):
-            inimigo = Sprite('./images/inimigo.png')
-            inimigo.x = randint(0, janela.width - inimigo.width)
-            inimigo.y = 0
-            inimigos.append(inimigo)
-        ultimo_inimigo = 0    
+def checa_inimigos():
+    c = 0
+    for linha in inimigos:
+        for inimigo in linha:
+            if inimigo != None:
+                c += 1
+    if c == 0:
+        cria_inimigos()
+
+def checa_fps():
+    if ultima_checagem_fps >= 1:
+        fps = 1/janela.delta_time()
+
+def maior_x():
+    maior = 0
+    for linha in inimigos:
+        for inimigo in linha:
+            if inimigo.x > maior:
+                maior = inimigo.x
+    return maior
+
+def menor_x():
+    menor = janela.width
+    for linha in inimigos:
+        for inimigo in linha:
+            if inimigo.x < menor:
+                menor = inimigo.x
+    return menor
 
 def mata_inimigos():
-    for inimigo in inimigos:
-        for tiro in tiros:
-            if inimigo.collided(tiro):
-                tiros.remove(tiro)
-                inimigos.remove(inimigo)
+    for linha in inimigos:
+        for inimigo in linha:
+            for tiro in tiros:
+                if tiro.x < maior_x() and tiro.x > menor_x():
+                    if inimigo.collided(tiro):
+                        tiros.remove(tiro)
+                        inimigo = None
+
+def esbarra():
+    for linha in inimigos:
+        for inimigo in linha:
+            if inimigo.x >= janela.width or inimigo.x <= 0:
+                return True
+    return False
+
+def movimenta_inimigos():
+    if esbarra():
+        dir_inimigos *= -1
+        for linha in inimigos:
+            for inimigo in linha:
+                inimigo.y += 30
+    for linha in inimigos:
+        for inimigo in linha:
+            inimigo.x += 10 * dir_inimigos
+    
             
                 
 
@@ -86,7 +141,8 @@ def jogo(dificuldade):
 
     movimento_nave()
     checa_tiro()
-    cria_inimigo()
+    checa_inimigos()
+    movimenta_inimigos()
     mata_inimigos()
 
     #desenha todos objetos
@@ -94,13 +150,12 @@ def jogo(dificuldade):
     for tiro in tiros:
         tiro.y -= 1
         tiro.draw()
-    for inimigo in inimigos:
-        inimigo.y += 0.1
-        inimigo.draw()
+    desenha_inimigos()
     
     #atualizações finais
     ultimo_tiro += janela.delta_time()
     ultimo_inimigo += janela.delta_time()
+    ultima_checagem_fps += janela.delta_time()
     tiros_fora_da_tela()
 
 
